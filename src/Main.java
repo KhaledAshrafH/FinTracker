@@ -2,11 +2,11 @@ import java.util.*;
 
 public class Main {
 
+    // Class to represent a financial transaction
     static class Transaction {
         String category;
         String description;
         double amount;
-
 
         Transaction(String category,String description, double amount) {
             this.category = category;
@@ -15,23 +15,25 @@ public class Main {
         }
     }
 
+
     static List<Transaction> transactions = new ArrayList<>();
+
+    // Track income and expense totals for quick summary calculations (O(1) time)
     static double totalIncome = 0;
     static double totalExpenses = 0;
+
     static int choice;
     static Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
         while (true) {
             printMenu();
             getUserChoice();
-
             switch (choice) {
                 case 1:
-                    inputTransactions();
+                    addTransaction();
                     break;
                 case 2:
-                    viewTransactions();
+                    viewAllTransactions();
                     break;
                 case 3:
                     viewSummary();
@@ -48,13 +50,15 @@ public class Main {
         }
     }
 
-    static void inputTransactions() {
+    // Take from user the transaction details and adds it to the list
+    static void addTransaction() {
         System.out.print("Enter Transaction Description: ");
         String description = scanner.nextLine();
 
         System.out.print("Enter Transaction Amount (positive for income, negative for expense): ");
         double amount = scanner.nextDouble();
-        // To View Summary in O(1) Time
+
+        // Update totals directly for quick summary access
         if(amount < 0) totalExpenses+=amount;
         else totalIncome+=amount;
 
@@ -67,33 +71,36 @@ public class Main {
         System.out.println("Transaction added successfully!");
     }
 
-    static void viewTransactions() {
+    // Displays all transactions with an option to sort by amount
+    static void viewAllTransactions() {
         if (transactions.isEmpty()) {
             System.out.println("No Transactions available now!");
             return;
         }
-
+        System.out.println("\nAll Transactions:");
         viewTransactionsUtility();
         System.out.print("Do you want to sort transactions by amount? (y/n): ");
         Scanner scanner = new Scanner(System.in);
         String answer = scanner.next().toLowerCase();
         if (answer.equalsIgnoreCase("y")) {
             transactions.sort(Comparator.comparingDouble(t -> t.amount));
-            System.out.println("Transactions sorted by amount.");
+            System.out.println("Transactions sorted by amount (low to high).");
+            System.out.println("\nAll Transactions (Sorted):");
             viewTransactionsUtility();
         }
     }
 
+    // Helper method to display transaction details in a formatted table
     static private void viewTransactionsUtility(){
-        System.out.println("\nAll Transactions:");
         System.out.printf("%-20s %-10s %-15s%n", "Description", "Amount", "Category");
-        System.out.println("-------------------------------------------------");
+        System.out.println("-----------------------------------------");
 
         for (Transaction transaction : transactions)
             System.out.printf("%-20s %-10.2f %-15s%n",
                     transaction.description, transaction.amount, transaction.category);
     }
 
+    // Displays Financial Summary
     static void viewSummary() {
         System.out.println("\nFinancial Summary:");
         System.out.println("Total Income: "+ totalIncome);
@@ -101,6 +108,7 @@ public class Main {
         System.out.println("Balance: "+ (totalIncome + totalExpenses));
     }
 
+    // Analyzes transaction categories and spending habits
     static void getInsights() {
         Map<String,Double> categories=new HashMap<>();
         for (Transaction transaction : transactions) {
@@ -119,7 +127,6 @@ public class Main {
             System.out.println("Category: " + category.getKey() + " - Spent: " + category.getValue()
                     + " ("+ String.format("%.1f%%", (category.getValue()/(totalExpenses*-1))*100 )+")" );
     }
-
 
     // Gets the user's choice from the menu
     private static void getUserChoice() {
