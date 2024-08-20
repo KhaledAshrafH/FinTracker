@@ -70,3 +70,6 @@ We welcome contributions to improve FinTracker. Feel free to fork the repository
 
 This project is licensed under the MIT [LICENSE](LICENSE). You are free to use, modify, and distribute the code under the terms of this license.
 
+## Contact
+For questions, feedback, or suggestions regarding PetPal Simulation, please contact me at 5aleda4rf@gmail.com.
+
