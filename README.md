@@ -31,7 +31,7 @@ git clone https://github.com/KhaledAshrafH/FinTracker.git
 ```bash
 javac Main.java
 ```
-3- Run the application:
+2- Run the application:
 ```bash
 java Main
 ```
