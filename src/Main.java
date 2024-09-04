@@ -50,26 +50,50 @@ public class Main {
         }
     }
 
+    // Transaction management methods
+
     // Take from user the transaction details and adds it to the list
     static void addTransaction() {
-        System.out.print("Enter Transaction Description: ");
-        String description = scanner.nextLine();
+        String description = getDescriptionInput();
+        double amount = getAmountInput();
+        String category = getCategoryInput();
+        updateTotals(amount);  // Update totals directly for quick summary access
 
-        System.out.print("Enter Transaction Amount (positive for income, negative for expense): ");
-        double amount = scanner.nextDouble();
-
-        // Update totals directly for quick summary access
-        if(amount < 0) totalExpenses+=amount;
-        else totalIncome+=amount;
-
-        System.out.print("Enter Transaction Category: ");
-        String category = scanner.next();
-        scanner.nextLine();
-
-        Transaction transaction = new Transaction(category,description,amount);
+        Transaction transaction = createTransaction(category, description, amount);
         transactions.add(transaction);
         System.out.println("Transaction added successfully!");
     }
+
+    static String getDescriptionInput() {
+        System.out.print("Enter Transaction Description: ");
+        return scanner.nextLine();
+    }
+
+    static double getAmountInput() {
+        System.out.print("Enter Transaction Amount (positive for income, negative for expense): ");
+        return scanner.nextDouble();
+    }
+
+    static String getCategoryInput() {
+        System.out.print("Enter Transaction Category: ");
+        String category = scanner.next();
+        scanner.nextLine(); // Consume newline character
+        return category;
+    }
+
+    static void updateTotals(double amount) {
+        if(amount < 0) {
+            totalExpenses += amount;
+        } else {
+            totalIncome += amount;
+        }
+    }
+
+    static Transaction createTransaction(String category, String description, double amount) {
+        return new Transaction(category, description, amount);
+    }
+
+    // Transaction display methods
 
     // Displays all transactions with an option to sort by amount
     static void viewAllTransactions() {
@@ -77,13 +101,12 @@ public class Main {
             System.out.println("No Transactions available now!");
             return;
         }
+
         System.out.println("\nAll Transactions:");
         viewTransactionsUtility();
-        System.out.print("Do you want to sort transactions by amount? (y/n): ");
-        Scanner scanner = new Scanner(System.in);
-        String answer = scanner.next().toLowerCase();
-        if (answer.equalsIgnoreCase("y")) {
-            transactions.sort(Comparator.comparingDouble(t -> t.amount));
+
+        if (promptForSorting()) {
+            transactions.sort(Comparator.comparingDouble(t -> t.amount)); // Method reference for cleaner code
             System.out.println("Transactions sorted by amount (low to high).");
             System.out.println("\nAll Transactions (Sorted):");
             viewTransactionsUtility();
@@ -100,6 +123,15 @@ public class Main {
                     transaction.description, transaction.amount, transaction.category);
     }
 
+    private static boolean promptForSorting() {
+        System.out.print("Do you want to sort transactions by amount? (y/n): ");
+        Scanner scanner = new Scanner(System.in);
+        String answer = scanner.next().toLowerCase();
+        return answer.equalsIgnoreCase("y");
+    }
+
+    // Summary and insight methods
+
     // Displays Financial Summary
     static void viewSummary() {
         System.out.println("\nFinancial Summary:");
@@ -110,23 +142,42 @@ public class Main {
 
     // Analyzes transaction categories and spending habits
     static void getInsights() {
-        Map<String,Double> categories=new HashMap<>();
+        Map<String, Double> categories = calculateCategories();
+        printSpendingInsights(categories);
+    }
+
+    static Map<String, Double> calculateCategories() {
+        Map<String, Double> categories = new HashMap<>();
         for (Transaction transaction : transactions) {
-            if(transaction.amount<0){
-                if(categories.containsKey(transaction.category))
-                    categories.put(transaction.category,
-                            categories.get(transaction.category)+(transaction.amount*-1));
-                else
-                    categories.put(transaction.category,transaction.amount*-1);
+            if (transaction.amount < 0) {
+                double amount = transaction.amount * -1;
+                categories.put(transaction.category, categories.getOrDefault(transaction.category, 0.0) + amount);
             }
         }
-
-        System.out.println("\nSpending Insights:");
-        System.out.println("Total Expenses: "+ totalExpenses*-1);
-        for (Map.Entry<String, Double> category : categories.entrySet())
-            System.out.println("Category: " + category.getKey() + " - Spent: " + category.getValue()
-                    + " ("+ String.format("%.1f%%", (category.getValue()/(totalExpenses*-1))*100 )+")" );
+        return categories;
     }
+
+    static void printSpendingInsights(Map<String, Double> categories) {
+        double totalExpenses = calculateTotalExpenses(categories);
+        System.out.println("\nSpending Insights:");
+        System.out.println("Total Expenses: " + totalExpenses * -1);
+
+        for (Map.Entry<String, Double> category : categories.entrySet()) {
+            double spentPercentage = (category.getValue() / (totalExpenses * -1)) * 100;
+            System.out.println("Category: " + category.getKey() + " - Spent: " + category.getValue()
+                    + " (" + String.format("%.1f%%", spentPercentage) + ")");
+        }
+    }
+
+    static double calculateTotalExpenses(Map<String, Double> categories) {
+        double totalExpenses = 0;
+        for (double amount : categories.values()) {
+            totalExpenses += amount;
+        }
+        return totalExpenses*-1;
+    }
+
+    // Menu and user choice handling methods
 
     // Gets the user's choice from the menu
     private static void getUserChoice() {
